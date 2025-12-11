@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game World Map</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+     
+    <style>
+        body { margin: 0; padding: 0; background: #111; }
+        html, body { height: 100%; }
+        #map { height: 100%; width: 100vw; background: #111; }
+        
+        /* Coordinate box styling */
+        .coordinate-box {
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            font-family: monospace;
+            padding: 5px 10px;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        const TILE_SIZE = 256; 
+        const GAME_WORLD_WIDTH = 200; // -100 to 100
+        
+        // --- 2. CUSTOM CRS SETUP ---
+        const scale = TILE_SIZE / GAME_WORLD_WIDTH; 
+        const offset = TILE_SIZE / 2; 
+
+        L.CRS.MyGame = L.Util.extend({}, L.CRS.Simple, {
+            transformation: new L.Transformation(scale, offset, -scale, offset)
+        });
+
+        // --- 3. MAP INITIALIZATION ---
+        var map = L.map('map', {
+            crs: L.CRS.MyGame,
+            minZoom: 0,
+            maxZoom: 6,
+            zoomSnap: 0.5,
+            center: [0, 0],
+            zoom: 1,
+            attributionControl: false // Optional: hides the 'Leaflet' text
+        });
+
+        // Tile Layer
+        L.tileLayer('tiles/{z}/{x}/{y}.png', {
+            tileSize: TILE_SIZE,
+            noWrap: true,
+            tms: false, 
+            minZoom: 0,
+            maxZoom: 6
+        }).addTo(map);
+
+        // Map Boundaries
+        var bounds = [[-100, -100], [100, 100]];
+        L.rectangle(bounds, {color: "#ff0000", weight: 1, fill: false}).addTo(map);
+        map.setMaxBounds(bounds);
+
+        // --- 4. URL PARAMETER LOGIC (New Feature) ---
+        
+        // Get parameters from URL (e.g. ?x=50&y=-20)
+        const params = new URLSearchParams(window.location.search);
+        const paramX = params.get('x');
+        const paramY = params.get('y');
+
+        // Check if both X and Y exist in the URL
+        if (paramX && paramY) {
+            
+            // Parse them as numbers
+            const targetX = parseFloat(paramX);
+            const targetY = parseFloat(paramY);
+
+            // Leaflet uses [Lat, Lng], which translates to [Y, X] in our logic
+            const targetLatLng = [targetY, targetX];
+
+            // 1. Zoom immediately to that spot (Zoom level 3 is close up)
+            map.setView(targetLatLng, 6);
+
+            // 2. Add a "Dot" Marker
+            L.circleMarker(targetLatLng, {
+                color: '#FF2500',      // Red border
+                fillColor: '#FF2500',  // Red fill
+                fillOpacity: 1,
+                radius: 6,             // Size of the dot
+                weight: 2              // Border thickness
+            }).addTo(map);
+        } else {
+            // If no coordinates provided, just show the whole map
+            map.fitBounds(bounds);
+        }
+    </script>
+</body>
+</html>
