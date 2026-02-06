@@ -51,7 +51,7 @@
         var map = L.map('map', {
             crs: L.CRS.MyGame,
             minZoom: 0,
-            maxZoom: 4,
+            maxZoom: 6,
             zoomSnap: 0.5,
             center: [0, 0],
             zoom: 1,
@@ -64,7 +64,7 @@
             noWrap: true,
             tms: false, 
             minZoom: 0,
-            maxZoom: 4
+            maxZoom: 6
         }).addTo(map);
 
         // Map Boundaries
@@ -90,7 +90,7 @@
             const targetLatLng = [targetY, targetX];
 
             // 1. Zoom immediately to that spot (Zoom level 3 is close up)
-            map.setView(targetLatLng, 4);
+            map.setView(targetLatLng, 6);
 
             // 2. Add a "Dot" Marker
             L.circleMarker(targetLatLng, {
